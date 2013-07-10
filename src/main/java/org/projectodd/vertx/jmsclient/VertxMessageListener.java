@@ -1,5 +1,7 @@
 package org.projectodd.vertx.jmsclient;
 
+import java.util.Arrays;
+
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -34,14 +36,17 @@ public class VertxMessageListener implements MessageListener {
             String body = ((TextMessage) jmsMessage).getText();
             String contentType = jmsMessage.getStringProperty("Content-Type");
             if (contentType != null) {
-                if ( contentType.equals( "application/json" ) ) {
-                    return new JsonObject( body );
+                if (contentType.equals("application/json")) {
+                    return new JsonObject(body);
                 }
             }
             return body;
         } else if (jmsMessage instanceof BytesMessage) {
+            System.err.println("convert bytes: " + ((BytesMessage) jmsMessage).getBodyLength());
             byte[] buf = new byte[(int) ((BytesMessage) jmsMessage).getBodyLength()];
-            return new Buffer(((BytesMessage) jmsMessage).readBytes(buf));
+            ((BytesMessage) jmsMessage).readBytes(buf);
+            Buffer b = new Buffer(buf);
+            return b;
         }
         return null;
     }
@@ -52,6 +57,7 @@ public class VertxMessageListener implements MessageListener {
 
         MessageHandler(Message message) {
             this.jmsMessage = message;
+            System.err.println("handler for: " + message);
         }
 
         @Override
